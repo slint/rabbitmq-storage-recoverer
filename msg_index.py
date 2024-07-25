@@ -4,7 +4,7 @@ Interact with RabbitMQ index files
 
 import pathlib
 from collections import defaultdict
-from typing import List, Tuple, Dict
+from typing import List
 from term import codec
 import typer
 from model import Message, message_from_decoded_etf
@@ -41,10 +41,14 @@ def parse_idx_file(filepath: pathlib.Path) -> List[Message]:
             elif record_type == 0b11:  # Publish record for persistent message
                 message_id = int.from_bytes(input_file.read(16), byteorder="big")
                 message_expiry = int.from_bytes(input_file.read(8), byteorder="big")
+                if message_expiry != 0:
+                    continue
                 assert message_expiry == 0
                 # Skip size since we don't need it
                 _ = int.from_bytes(input_file.read(4), byteorder="big")
-                message_embedded_size = int.from_bytes(input_file.read(4), byteorder="big")
+                message_embedded_size = int.from_bytes(
+                    input_file.read(4), byteorder="big"
+                )
 
                 if message_embedded_size != 0:
                     # Message is stored directly in the index
@@ -54,20 +58,28 @@ def parse_idx_file(filepath: pathlib.Path) -> List[Message]:
                     # Complete reference: https://erlang.org/doc/apps/erts/erl_ext_dist.html
                     try:
                         decoded_message = codec.binary_to_term(message)
-                    except:
+                    except Exception:
                         # If the file corrupted, the codec won't be able to decode the message
                         # We don't have a write ok marker like in the store
                         typer.secho(
-                            f"Invalid ETF data found. Aborting recovery for this file.",
+                            "Invalid ETF data found. Aborting recovery for this file.",
                             fg=typer.colors.RED,
                         )
                         continue
 
-                    structured_message = message_from_decoded_etf(message_id, decoded_message)
+                    structured_message = message_from_decoded_etf(
+                        message_id, decoded_message
+                    )
                     messages[record_seq_id] = structured_message
                 else:
                     # Message is stored in the store
                     continue
+            else:
+                # Unknown record type
+                typer.secho(
+                    f"Unknown record type {record_type} found.",
+                    fg=typer.colors.RED,
+                )
 
     unacked_messages = []  # This will contain all unacked messages
 

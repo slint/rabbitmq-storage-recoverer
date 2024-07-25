@@ -2,7 +2,7 @@
 RabbitMQ Recoverer is a tool to extract messages from RabbitMQ disk storage.
 It can be used in case after a crash, Mnesia logs corruption, or for forensic needs.
 """
-from typing import List, Tuple
+
 import pathlib
 import typer
 from msg_store import parse_rdq_file
@@ -12,7 +12,9 @@ from msg_exporter import dump_message
 app = typer.Typer()
 
 
-def _recover_rdq_file(rdq_file_path: pathlib.Path, output_directory: pathlib.Path, verbose: bool = False) -> int:
+def _recover_rdq_file(
+    rdq_file_path: pathlib.Path, output_directory: pathlib.Path, verbose: bool = False
+) -> int:
     """
     Private function for command recover-rdq-files. Takes pathlib.Path objects as arguments instead of strings.
 
@@ -70,7 +72,9 @@ def _recover_persistent_store(store_path: pathlib.Path, output_directory: pathli
     typer.secho(f"Recovered {total_messages_recovered} messages.", fg=typer.colors.CYAN)
 
 
-def _recover_idx_file(idx_file_path: pathlib.Path, output_directory: pathlib.Path, verbose: bool = False) -> int:
+def _recover_idx_file(
+    idx_file_path: pathlib.Path, output_directory: pathlib.Path, verbose: bool = False
+) -> int:
     """
     Private function for command recover-messages-stored-in-idx-file. Takes pathlib.Path objects as arguments instead of strings.
 

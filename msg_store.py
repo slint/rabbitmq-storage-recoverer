@@ -29,7 +29,7 @@ def parse_rdq_file(filepath: pathlib.Path) -> List[Message]:
             message_suffix = input_file.read(1)
             if message_suffix != b"\xff":
                 typer.secho(
-                    f"Message suffix is not FF. Aborting recovery for this file.",
+                    "Message suffix is not FF. Aborting recovery for this file.",
                     fg=typer.colors.RED,
                 )
                 continue
